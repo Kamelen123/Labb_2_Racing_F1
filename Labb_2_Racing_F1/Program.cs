@@ -2,78 +2,59 @@
 {
     internal class Program
     {
-        static async void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Car car = new Car("ferrari");
             Car car2 = new Car("RedBull");
 
-            Thread thread = new Thread(car.Race);
-            Thread thread2 = new Thread(car2.Race);
-            thread2.Start();
-            thread.Start();
-            //thread2.Join();
-            //thread.Join();
-            bool ferrari = car.IsFinished();
-            bool RedBull = car.IsFinished();
-
-            if (ferrari == true)
-            {
-                thread.Join();
-            }
-            else
-            {
-                thread2.Join();
-            }
+            Task t1 = Task.Run(() => car.Race());
+            Task t2 = Task.Run(() => car2.Race());
+            Task result = Task.Run(() => Result(t1, t2, car, car2));
             
-            //while (!car.Finnished || !car2.Finnished)
-            //{
-            //    string input = Console.ReadLine();
-            //    Console.WriteLine($"{car.Name} Distance traveled: {car.Distance} / {Car.RaceTrackDistance} Speed: {car.Speed} m/s");
-            //    Console.WriteLine($"{car2.Name} Distance traveled: {car2.Distance} / {Car.RaceTrackDistance} Speed: {car2.Speed} m/s");
-            //}
+
+            while (!(t1.IsCompleted && t2.IsCompleted && result.IsCompleted))
+            {
+
+                Console.WriteLine("Press Enter to get race info...");
+                Console.WriteLine("-------------------------------------------------");
+                string input = Console.ReadLine();
+                //if (input == "status")
+                //{
+                Console.WriteLine($"{car.Name} Distance traveled: {car.Distance} / {Car.RaceTrackDistance} Speed: {car.Speed} m/s");
+                Console.WriteLine($"{car2.Name} Distance traveled: {car2.Distance} / {Car.RaceTrackDistance} Speed: {car2.Speed} m/s");
+                Console.WriteLine("-------------------------------------------------");
+                //}
 
 
-            //if (car.IsFinished() && !car2.IsFinished())
-            //{
-            //    Console.WriteLine($"GZ {car.Name}");
-            //    Console.WriteLine($"Sorry {car2.Name}");
-            //}
-            //if (!car.IsFinished() && car2.IsFinished())
-            //{
-            //    Console.WriteLine($"GZ {car2.Name}");
-            //    Console.WriteLine($"Sorry {car.Name}");
-            //}
-            //if (car.IsFinished() && car2.IsFinished())
-            //{
-            //    Console.WriteLine("Hej");
-            //}
-            //if (car.IsFinished() && !car2.IsFinished())
-            //{
-            //    Console.WriteLine($"GZ {car.Name}");
-            //    Console.WriteLine($"Sorry {car2.Name}");
-            //}
-            //else if (!car.IsFinished() && car2.IsFinished())
-            //{
-            //    Console.WriteLine($"GZ {car2.Name}");
-            //    Console.WriteLine($"Sorry {car.Name}");
-            //}
-            //else if (car.IsFinished() && car2.IsFinished())
-            //{
-            //    Console.WriteLine("Hej");
-            //}
-            if (ferrari && !RedBull)
-            {
-                Console.WriteLine($"Congratulations {car.Name}!");
-                Console.WriteLine($"Sorry {car2.Name}");
             }
-            else if (!ferrari && RedBull)
+            Console.WriteLine("Press Enter to exit.");
+            Console.ReadLine();
+        }
+
+        static async Task<bool> Result(Task t1, Task t2, Car car, Car car2)
+        {
+            while (true)
             {
-                Console.WriteLine($"Congratulations {car2.Name}!");
-                Console.WriteLine($"Sorry {car.Name}");
-            }
-            else if (ferrari && RedBull)
-            {
-                Console.WriteLine("It's a tie!");
+                if (t1.IsCompleted && !t2.IsCompleted)
+                {
+                    Console.WriteLine($"GZ {car.Name}");
+                    Console.WriteLine($"Sorry {car2.Name}");
+                    Console.WriteLine("-------------------------------------------------");
+                    return true;
+                }
+                else if (!t1.IsCompleted && t2.IsCompleted)
+                {
+                    Console.WriteLine($"GZ {car2.Name}");
+                    Console.WriteLine($"Sorry {car.Name}");
+                    Console.WriteLine("-------------------------------------------------");
+                    return true;
+                }
+                else if (t1.IsCompleted && t2.IsCompleted)
+                {
+                    Console.WriteLine("It's a tie!");
+                    Console.WriteLine("-------------------------------------------------");
+                    return true;
+                }
             }
         }
     }
